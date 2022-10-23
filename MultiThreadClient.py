@@ -1,5 +1,6 @@
 import socket
 import threading
+import random
 
 HOST = 'localhost'
 PORT = 12345
@@ -28,7 +29,6 @@ class MultiThreadClient(threading.Thread):
 
         # user message
         msg = ''
-
         while msg.strip().lower() != 'bye':
             msg = input('Input message to server: ')
             self.send_and_recv_msg(msg)
@@ -48,6 +48,6 @@ if __name__ == '__main__':
     except ValueError:
         client_num = 5
 
-    for i in range(1, client_num+1):
+    for i in range(1, client_num + 1):
         client = MultiThreadClient(i)
         client.start()

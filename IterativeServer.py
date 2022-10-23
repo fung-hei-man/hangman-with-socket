@@ -32,8 +32,7 @@ def start_iterative_server():
                 print(f'> Data from client: {data}')
                 conn.send(f'You said "{data}"'.encode())
 
-        conn.close()
-        print(f'Conn from {addr} closed')
+        print(f'Status of connection from {addr}: {"closed" if conn.fileno() == -1 else "connected"}')
 
 
 if __name__ == '__main__':

@@ -9,24 +9,36 @@ class MultiThreadClient(threading.Thread):
     def __init__(self, client_idx):
         super().__init__()
         self.client_idx = client_idx
+        self.socket = None
 
     def run(self):
         try:
-            s = socket.socket()
-            s.connect((HOST, PORT))
+            self.socket = socket.socket()
+            self.socket.connect((HOST, PORT))
         except socket.error as e:
             print('Oops! Something wrong when connecting to server')
             print(str(e))
             return
 
-        data = s.recv(1024).decode()
-        print(f'> Date from server: {data}')
+        # greeting
+        data = self.socket.recv(1024).decode()
+        print(f'> Data from server: {data}')
 
-        s.send(str.encode(f'Hello server, I am client #{self.client_idx}'))
-        data = s.recv(1024).decode()
-        print(f'> Date from server: {data}')
+        self.send_and_recv_msg(f'Hello server, I am client #{self.client_idx}')
 
-        s.close()
+        # user message
+        msg = ''
+
+        while msg.strip().lower() != 'bye':
+            msg = input('Input message to server: ')
+            self.send_and_recv_msg(msg)
+
+        self.socket.close()
+
+    def send_and_recv_msg(self, msg):
+        self.socket.send(str.encode(msg))
+        res = self.socket.recv(1024).decode()
+        print(f'> Data from server: {res}')
 
 
 if __name__ == '__main__':

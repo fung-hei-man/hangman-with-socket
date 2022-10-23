@@ -21,17 +21,16 @@ def start_iterative_server():
 
         with conn:
             print(f'Accepted connection from {addr}')
-            conn.sendall(str.encode('Hello! You are now connected to the iterative sever'))
+            conn.send(str.encode('Hello! You are now connected to the iterative sever'))
 
             while True:
                 data = conn.recv(1024).decode()
 
                 if not data:
-                    conn.send(str.encode('byebye!'))
                     break
 
                 print(f'> Data from client: {data}')
-                conn.send(f'I received "{data}" from you!'.encode())
+                conn.send(f'You said "{data}"'.encode())
 
         conn.close()
         print(f'Conn from {addr} closed')

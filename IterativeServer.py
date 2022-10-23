@@ -1,3 +1,4 @@
+import re
 import socket
 
 PORT = 12345
@@ -18,6 +19,7 @@ def start_iterative_server():
 
     while True:
         conn, addr = s.accept()
+        client_idx = None
 
         with conn:
             print(f'Accepted connection from {addr}')
@@ -28,8 +30,12 @@ def start_iterative_server():
 
                 if not data:
                     break
+                elif client_idx is None:
+                    reg_exp = re.match('Hello server, I am client #(\d+)', data)
+                    if reg_exp is not None:
+                        client_idx = reg_exp.group(1)
 
-                print(f'> Data from client: {data}')
+                print(f'> Data from client #{client_idx}: {data}')
                 conn.send(f'You said "{data}"'.encode())
 
         print(f'Status of connection from {addr}: {"closed" if conn.fileno() == -1 else "connected"}')

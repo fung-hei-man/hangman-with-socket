@@ -1,6 +1,5 @@
 import re
 import socket
-import threading
 from _thread import *
 
 PORT = 12346

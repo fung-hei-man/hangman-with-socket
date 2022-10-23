@@ -1,6 +1,5 @@
 import socket
 import threading
-import random
 
 HOST = 'localhost'
 PORT = 12345

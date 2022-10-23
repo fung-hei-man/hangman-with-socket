@@ -2,7 +2,7 @@ import random
 import socket
 
 HOST = 'localhost'
-PORT = 12345
+PORT = 12346
 
 
 def socket_client():

@@ -28,7 +28,9 @@ def socket_client():
     data = s.recv(1024).decode()
     print(f'>> {data}')
 
-    s.close()
+    while True:
+        data = s.recv(1024).decode()
+        print(f'>> {data}')
 
 
 if __name__ == '__main__':

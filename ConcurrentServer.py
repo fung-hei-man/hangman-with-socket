@@ -23,11 +23,11 @@ class HangmanConcurrentServer:
             self._socket.bind(('localhost', self._port))
             self._socket.listen(self._queue_size)
         except socket.error as e:
-            print('Oops! Something is wrong when try listening from socket')
-            print(str(e))
+            logging.error('Oops! Something is wrong when try listening from socket')
+            logging.error(str(e))
             return
 
-        print(f'Concurrent server listening to self_port {self._port} with queue size {self._queue_size}')
+        logging.info(f'Concurrent server listening to self_port {self._port} with queue size {self._queue_size}')
 
         while True:
             conn, addr = self._socket.accept()
@@ -68,8 +68,9 @@ class HangmanConcurrentServer:
             room_num = room_num if room_num is not None else str(random.randint(0, 9999)).rjust(4, '0')
             client_msg += f'Waiting for another player to join... Tell your friend to join with room number #{room_num}!'
             MessageHandler.send_msg(conn, client_msg)
-
             room_pool.create_pending_player(room_num, random.choice(self._roles), conn, addr)
+            MessageHandler.receive_msg(conn)
+
         else:
             client_msg += 'We\'ve matched a player for you!'
             self.create_room(client_msg, pending_player, conn, addr)

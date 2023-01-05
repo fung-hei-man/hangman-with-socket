@@ -1,4 +1,5 @@
 import logging
+import socket
 
 from Player import Player
 from Room import Room
@@ -41,7 +42,7 @@ class RoomPool:
         logging.debug(f'Handle {raddr} disconnect')
         target_idx = None
         for idx, player in enumerate(self.pending_players):
-            if player.conn.getpeername() == raddr:
+            if player.addr == raddr:
                 logging.debug(f'Find player {raddr} in pending list')
                 target_idx = idx
         if target_idx is not None:
@@ -49,15 +50,18 @@ class RoomPool:
         logging.debug(f'Pending players num: {len(self.pending_players)}')
 
         for rm_num, room in self.rooms.items():
-            if room.killer.conn.getpeername() == raddr or room.defender.conn.getpeername() == raddr:
+            if room.killer.addr == raddr or room.defender.addr == raddr:
                 self.rooms.pop(rm_num)
 
                 logging.debug(f'Find player {raddr} in room {rm_num}')
                 msg = 'Your partner gone offline. Game ended :('
-                room.killer.conn.send(str.encode(msg))
-                room.killer.conn.close()
-                room.defender.conn.send(str.encode(msg))
-                room.defender.conn.close()
+                try:
+                    room.killer.conn.send(str.encode(msg))
+                    room.killer.conn.close()
+                    room.defender.conn.send(str.encode(msg))
+                    room.defender.conn.close()
+                except socket.error:
+                    logging.warn('Fail to send msg when handling disconnect (probably normal)')
 
             logging.debug(f'current rooms:\n{self.rooms}')
 

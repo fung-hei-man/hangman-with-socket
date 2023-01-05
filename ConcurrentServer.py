@@ -1,9 +1,17 @@
+import logging
+import random
 import re
 import socket
 from _thread import *
 
-PORT = 12346
+from Player import Player
+from RoomPool import room_pool
+
+PORT = 12345
 QUEUE_SIZE = 5
+ROLES = ['killer', 'defender']
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 def start_concurrent_server():
@@ -20,9 +28,58 @@ def start_concurrent_server():
 
     while True:
         conn, addr = s.accept()
-        print(f'Accepted connection from {addr}')
+        start_new_thread(arrange_room, (conn, addr))
 
-        start_new_thread(serve_client, (conn, addr))
+
+def arrange_room(conn, addr):
+    logging.info(f'Accepted connection from {addr}')
+
+    conn.send(str.encode('Hello, Welcome to the Hangman game! Do you have a room number?'))
+    room_num = conn.recv(1024).decode()
+    room_num = None if room_num == ' ' else room_num
+
+    client_msg = ''
+
+    # room num provided
+    if room_num is not None:
+        logging.debug(f'Client wants to enter room #{room_num}')
+        # provided room has two players already
+        if room_num in room_pool.rooms:
+            client_msg += f'Room #{room_num} is occupied! Create a new room for you :) \n'
+            room_num = None  # the number is invalid
+
+        else:
+            pending_player = room_pool.find_pending_player(room_num)
+            if pending_player is not None:
+                logging.debug(f'Room #{room_num} have 2 players, start it now')
+                if pending_player.rm_num == room_num:
+                    client_msg += 'Found your partner!'
+                else:
+                    client_msg += f'Room #{room_num} does not exist, but we\'ve got your another player to player with!'
+                conn.send(str.encode(client_msg))
+
+                room_num = pending_player.rm_num
+                new_player = Player(room_num, ROLES[0] if pending_player.role == ROLES[1] else ROLES[1], conn, addr)
+                room_pool.create_room(pending_player.rm_num, pending_player, new_player)
+                room_pool.start_room(pending_player.rm_num)
+                return
+
+    # no room num provided, or is invalid, find a pending player
+    pending_player = room_pool.find_pending_player(None)
+
+    if pending_player is None:
+        room_num = room_num if room_num is not None else str(random.randint(0, 9999)).rjust(4, '0')
+        client_msg += f'Waiting for another player to join... Tell your friend to join with room number #{room_num}!'
+        conn.send(str.encode(client_msg))
+
+        room_pool.create_pending_player(room_num, random.choice(ROLES), conn, addr)
+    else:
+        client_msg += 'We\'ve matched a player for you!'
+        conn.send(str.encode(client_msg))
+
+        new_player = Player(pending_player.rm_num, ROLES[0] if pending_player.role == ROLES[1] else ROLES[1], conn, addr)
+        room_pool.create_room(pending_player.rm_num, pending_player, new_player)
+        room_pool.start_room(pending_player.rm_num)
 
 
 def serve_client(conn, addr):

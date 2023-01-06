@@ -57,7 +57,7 @@ class HangmanConcurrentServer:
                     if pending_player.rm_num == room_num:
                         client_msg += 'Found your partner!'
                     else:
-                        client_msg += f'Room #{room_num} does not exist, but we\'ve got your another player to player with!'
+                        client_msg += f'Room #{room_num} does not exist, but we\'ve got your another player to play with!'
                     self.create_room(client_msg, pending_player, conn, addr)
                     return
 

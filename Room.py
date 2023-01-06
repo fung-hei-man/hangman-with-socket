@@ -21,7 +21,7 @@ class Room(threading.Thread):
         file = open('words.txt')
         f = file.readlines()
 
-        while self.word is None or len(self.word) < 9:
+        while self.word is None or len(self.word) < 10:
             i = random.randrange(0, len(f) - 1)
 
             self.word = f[i][:-1].lower()

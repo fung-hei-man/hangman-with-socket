@@ -20,10 +20,12 @@ class Room(threading.Thread):
     def fetch_word(self):
         file = open('words.txt')
         f = file.readlines()
-        i = random.randrange(0, len(f) - 1)
 
-        self.word = f[i][:-1].lower()
-        self.word_letters = set(self.word)
+        while self.word is None or len(self.word) < 9:
+            i = random.randrange(0, len(f) - 1)
+
+            self.word = f[i][:-1].lower()
+            self.word_letters = set(self.word)
 
         return self.word
 
@@ -31,7 +33,6 @@ class Room(threading.Thread):
         while self.strokes < 6 and len(self.word_letters) != len(self.correct_letters):
             logging.debug(f'[Room #{self.rm_num}] {self.current_player.role} turn to guess')
             player_guess = self.current_player.guess_letter()
-            logging.debug(player_guess)
             # avoid guessing same letter
             while player_guess in self.guessed_letters:
                 player_guess = self.current_player.guess_letter_again(player_guess)
@@ -47,9 +48,9 @@ class Room(threading.Thread):
                 if 'killer' == self.current_player.role:
                     self.strokes += 1
                     killer_msg = 'You get it right! A stroke is added to the hangman figure!'
-                    defender_msg = f'Killer guessed {player_guess} and it is correct! A stroke is added to the hangman figure!'
+                    defender_msg = f'Killer guessed "{player_guess}" and it is correct! A stroke is added to the hangman figure!'
                 else:
-                    killer_msg = f'Defender guessed {player_guess} and it is correct!'
+                    killer_msg = f'Defender guessed "{player_guess}" and it is correct!'
                     defender_msg = 'You get it right!'
 
             else:
@@ -57,21 +58,38 @@ class Room(threading.Thread):
 
                 if 'killer' == self.current_player.role:
                     killer_msg = 'You get it wrong :( It\'s defender\'s turn!'
-                    defender_msg = f'Killer guessed {player_guess} and it is wrong!'
+                    defender_msg = f'Killer guessed "{player_guess}" and it is wrong!'
                 else:
-                    killer_msg = f'Defender guessed {player_guess} and it is wrong!'
+                    killer_msg = f'Defender guessed "{player_guess}" and it is wrong!'
                     defender_msg = 'You get it wrong :( It\'s killer\'s turn!'
                 # switch
                 self.current_player = self.defender if self.current_player.role == 'killer' else self.killer
 
             display_word = [letter if letter in self.correct_letters else '_' for letter in self.word]
-            self.killer.send_result(self.strokes, killer_msg, display_word)
-            self.defender.send_result(self.strokes, defender_msg, display_word)
+            self.killer.send_guess_result(self.strokes, killer_msg, display_word)
+            self.defender.send_guess_result(self.strokes, defender_msg, display_word)
 
         self.handle_end_game()
 
     def handle_end_game(self):
-        
+        winner_msg = 'YOU ARE THE WINNER!!!'
+        loser_msg = 'You lose the game :('
+        draw_msg = 'Draw!'
+
+        # Word complete + Figure not complete => Defender wins
+        # Word not complete + Figure complete => Killer wins
+        # Word complete + Figure complete => draw
+        if self.strokes == 6 and len(self.word_letters) == len(self.correct_letters):
+            self.killer.send_game_result(draw_msg)
+            self.defender.send_game_result(draw_msg)
+
+        elif self.strokes == 6:
+            self.killer.send_game_result(winner_msg + ' Poor man dead!')
+            self.defender.send_game_result('Killer killed the poor man!! ' + loser_msg)
+
+        elif len(self.word_letters) == len(self.correct_letters):
+            self.killer.send_game_result('Defender saved the poor man!! ' + loser_msg)
+            self.defender.send_game_result(winner_msg + ' You save the man!')
 
     def __repr__(self):
         return f'player1: {self.defender}, player2: {self.killer}, word: {self.word} \n'

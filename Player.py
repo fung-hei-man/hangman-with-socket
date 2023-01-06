@@ -1,5 +1,3 @@
-import logging
-
 import MessageHandler
 
 HANGMAN_FIGURE = [
@@ -92,9 +90,12 @@ class Player:
         MessageHandler.send_msg(self.conn, f'{letter} used already! Guess another letter?')
         return MessageHandler.receive_msg(self.conn).lower()
 
-    def send_result(self, strokes, msg, word_hint):
+    def send_guess_result(self, strokes, msg, word_hint):
         figure = HANGMAN_FIGURE[strokes]
         MessageHandler.send_msg(self.conn, f'{msg}{figure}\n{word_hint}')
+
+    def send_game_result(self, msg):
+        MessageHandler.send_msg(self.conn, msg)
 
     def __repr__(self):
         return f'{self.addr[1]} in room {self.rm_num} as {self.role}'

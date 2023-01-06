@@ -69,7 +69,6 @@ class HangmanConcurrentServer:
             client_msg += f'Waiting for another player to join... Tell your friend to join with room number #{room_num}!'
             MessageHandler.send_msg(conn, client_msg)
             room_pool.create_pending_player(room_num, random.choice(self._roles), conn, addr)
-            MessageHandler.receive_msg(conn)
 
         else:
             client_msg += 'We\'ve matched a player for you!'

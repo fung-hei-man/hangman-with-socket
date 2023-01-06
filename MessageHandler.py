@@ -1,3 +1,4 @@
+import logging
 import socket
 
 from RoomPool import room_pool
@@ -14,6 +15,7 @@ def send_msg(conn, data):
 
 
 def receive_msg(conn):
+    logging.debug(f'Expecting response from {conn.getpeername()}')
     data = conn.recv(1024)
     if not data:
         addr = conn.getpeername()

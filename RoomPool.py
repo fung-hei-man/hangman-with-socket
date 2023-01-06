@@ -1,5 +1,6 @@
 import logging
 import socket
+import time
 
 from Player import Player
 from Room import Room
@@ -27,16 +28,21 @@ class RoomPool:
         self.pending_players.insert(0, player)  # insert in the beginning
 
     def create_and_start_room(self, rm_num, player1, player2):
-        new_room = Room(player1 if player1.role == 'defender' else player2, player1 if player1.role == 'killer' else player2)
+        new_room = Room(rm_num, player1 if player1.role == 'defender' else player2, player1 if player1.role == 'killer' else player2)
         self.rooms.update({rm_num: new_room})
+        logging.debug(f'current rooms:\n{self.rooms}')
 
         word = new_room.fetch_word()
-        logging.info(f'Room {rm_num} decided word ""{word}""')
+        logging.info(f'[Room #{rm_num}] Decided word ""{word}""')
 
-        new_room.defender.start()
-        new_room.killer.start()
+        new_room.defender.assign_room(new_room)
+        new_room.killer.assign_room(new_room)
 
-        logging.debug(f'current rooms:\n{self.rooms}')
+        new_room.defender.send_welcome_msg()
+        new_room.killer.send_welcome_msg()
+
+        time.sleep(0.1)
+        new_room.start()
 
     def handle_offline_player(self, raddr):
         logging.debug(f'Handle {raddr} disconnect')
@@ -51,7 +57,7 @@ class RoomPool:
 
         for rm_num, room in self.rooms.items():
             if room.killer.addr == raddr or room.defender.addr == raddr:
-                self.rooms.pop(rm_num)
+                target_idx = rm_num
 
                 logging.debug(f'Find player {raddr} in room {rm_num}')
                 msg = 'Your partner gone offline. Game ended :('
@@ -63,7 +69,8 @@ class RoomPool:
                 except socket.error:
                     logging.warn('Fail to send msg when handling disconnect (probably normal)')
 
-            logging.debug(f'current rooms:\n{self.rooms}')
+        self.rooms.pop(target_idx)
+        logging.debug(f'current rooms:\n{self.rooms}')
 
 
 room_pool = RoomPool()

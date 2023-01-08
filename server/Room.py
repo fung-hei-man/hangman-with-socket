@@ -1,6 +1,7 @@
 import logging
 import random
 import threading
+import time
 
 import RoomPool
 
@@ -72,6 +73,7 @@ class Room(threading.Thread):
             self.defender.send_guess_result(self.strokes, defender_msg, display_word)
 
         self.handle_end_game()
+        time.sleep(0.3)
         self.switch_role_restart_game()
 
     def handle_end_game(self):
@@ -94,6 +96,7 @@ class Room(threading.Thread):
             self.killer.send_game_result('Defender saved the poor man!! ' + loser_msg)
             self.defender.send_game_result(winner_msg + ' You save the man!')
 
+        time.sleep(0.1)
         self.killer.send_game_result("=================================================")
         self.defender.send_game_result("=================================================")
 

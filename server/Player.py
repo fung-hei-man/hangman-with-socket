@@ -1,3 +1,5 @@
+import time
+
 import MessageHandler
 
 HANGMAN_FIGURE = [
@@ -93,6 +95,7 @@ class Player:
     def send_guess_result(self, strokes, msg, word_hint):
         figure = HANGMAN_FIGURE[strokes]
         MessageHandler.send_msg(self.conn, self.addr, f'{msg}{figure}\n{word_hint}')
+        time.sleep(0.1)
 
     def send_game_result(self, msg):
         MessageHandler.send_msg(self.conn, self.addr, msg)

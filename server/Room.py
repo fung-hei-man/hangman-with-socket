@@ -2,6 +2,8 @@ import logging
 import random
 import threading
 
+import RoomPool
+
 
 class Room(threading.Thread):
     def __init__(self, rm_num, defender, killer):
@@ -70,6 +72,7 @@ class Room(threading.Thread):
             self.defender.send_guess_result(self.strokes, defender_msg, display_word)
 
         self.handle_end_game()
+        self.switch_role_restart_game()
 
     def handle_end_game(self):
         winner_msg = 'YOU ARE THE WINNER!!!'
@@ -90,6 +93,14 @@ class Room(threading.Thread):
         elif len(self.word_letters) == len(self.correct_letters):
             self.killer.send_game_result('Defender saved the poor man!! ' + loser_msg)
             self.defender.send_game_result(winner_msg + ' You save the man!')
+
+        self.killer.send_game_result("=================================================")
+        self.defender.send_game_result("=================================================")
+
+    def switch_role_restart_game(self):
+        self.killer.role = 'defender'
+        self.defender.role = 'killer'
+        RoomPool.room_pool.recreate_room(self.rm_num, self.defender, self.killer)
 
     def __repr__(self):
         return f'player1: {self.defender}, player2: {self.killer}, word: {self.word} \n'

@@ -44,6 +44,11 @@ class RoomPool:
         time.sleep(0.1)
         new_room.start()
 
+    def recreate_room(self, rm_num, player1, player2):
+        # delete and create room again
+        self.rooms.pop(rm_num)
+        self.create_and_start_room(rm_num, player1, player2)
+
     def handle_offline_player(self, raddr):
         logging.debug(f'Handle {raddr} disconnect')
         target_idx = None
@@ -67,7 +72,7 @@ class RoomPool:
                     room.defender.conn.send(str.encode(msg))
                     room.defender.conn.close()
                 except socket.error:
-                    logging.warn('Fail to send msg when handling disconnect (probably normal)')
+                    logging.error('Fail to send msg when handling disconnect (probably normal)')
 
         self.rooms.pop(target_idx)
         logging.debug(f'current rooms:\n{self.rooms}')

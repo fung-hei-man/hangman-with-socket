@@ -21,14 +21,14 @@ class Room(threading.Thread):
         self.correct_letters = set()
 
     def fetch_word(self):
-        file = open('./words.txt')
-        f = file.readlines()
+        with open('words.txt', 'r') as file:
+            f = file.readlines()
 
-        while self.word is None or len(self.word) < 10:
-            i = random.randrange(0, len(f) - 1)
+            while self.word is None or len(self.word) < 10:
+                i = random.randrange(0, len(f) - 1)
 
-            self.word = f[i][:-1].lower()
-            self.word_letters = set(self.word)
+                self.word = f[i][:-1].lower()
+                self.word_letters = set(self.word)
 
         return self.word
 
@@ -77,8 +77,8 @@ class Room(threading.Thread):
         self.switch_role_restart_game()
 
     def handle_end_game(self):
-        winner_msg = 'YOU ARE THE WINNER!!!'
-        loser_msg = 'You lose the game :('
+        winner_msg = f'YOU ARE THE WINNER!!! The word is ""{self.word}"".'
+        loser_msg = f'You lose the game :( The word is ""{self.word}"".'
         draw_msg = 'Draw!'
 
         # Word complete + Figure not complete => Defender wins

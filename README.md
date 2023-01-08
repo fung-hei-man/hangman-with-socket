@@ -16,11 +16,13 @@
 This server uses threads to serve connection requests. Client should be able to connect to server immediately regardless of number of connected clients.
 
 ```
-python server/HangmanConcurrentServer.py
+cd server
+python HangmanConcurrentServer.py
 ```
 \* `MultiThreadClient.py` cannot display the input prompt for different clients at the same time
 
 ## Single Thread Client
 ```
-python client/SingleClient.py
+cd client
+python SingleClient.py
 ```

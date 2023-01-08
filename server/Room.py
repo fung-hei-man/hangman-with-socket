@@ -20,7 +20,7 @@ class Room(threading.Thread):
         self.correct_letters = set()
 
     def fetch_word(self):
-        file = open('words.txt')
+        file = open('./words.txt')
         f = file.readlines()
 
         while self.word is None or len(self.word) < 10:

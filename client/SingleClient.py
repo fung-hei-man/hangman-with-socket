@@ -35,7 +35,9 @@ def socket_client():
         if data.find('letter?') == -1:
             print(f'>> {data}')
         else:
-            user_input = input(f'>> {data}')
+            user_input = input(f'>> {data}').strip()
+            while not user_input.isalpha():
+                user_input = input('>> Please input an English character!!').strip()
             user_input = ' ' if user_input == '' else user_input.strip()[:1]
             s.send(str.encode(user_input))
 

@@ -15,7 +15,6 @@ def send_msg(conn, addr, data):
 
 def receive_msg(conn, addr):
     try:
-        logging.debug(f'Expecting response from {conn.getpeername()}')
         data = conn.recv(1024)
         if not data:
             room_pool.handle_offline_player(addr)
